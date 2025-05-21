@@ -13,17 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os, io, re
+
 import pandas as pd
 import streamlit as st
 from openai import OpenAI
 import matplotlib.pyplot as plt
 from typing import List, Dict, Any, Tuple
 from dotenv import load_dotenv
+import os, io, re
 
 load_dotenv()
 
-# === Configuration ===
 api_key = os.environ.get("NVIDIA_API_KEY")
 
 client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=api_key)
@@ -53,10 +53,7 @@ def QueryUnderstandingTool(query: str) -> bool:
     return intent_response == "true"
 
 
-# === CodeGeneration TOOLS ============================================
-
-
-# ------------------  PlotCodeGeneratorTool ---------------------------
+# ------------------  PlotCodeGeneratorTool 
 def PlotCodeGeneratorTool(cols: List[str], query: str) -> str:
     """Generate a prompt for the LLM to write pandas+matplotlib code for a plot based on the query and columns."""
     return f"""
@@ -73,7 +70,7 @@ def PlotCodeGeneratorTool(cols: List[str], query: str) -> str:
     """
 
 
-# ------------------  CodeWritingTool ---------------------------------
+# ------------------  CodeWritingTool 
 def CodeWritingTool(cols: List[str], query: str) -> str:
     """Generate a prompt for the LLM to write pandas-only code for a data query (no plotting)."""
     return f"""
@@ -89,7 +86,7 @@ def CodeWritingTool(cols: List[str], query: str) -> str:
     """
 
 
-# === CodeGenerationAgent ==============================================
+# === CodeGenerationAgent 
 
 
 def CodeGenerationAgent(query: str, df: pd.DataFrame):
@@ -121,7 +118,7 @@ def CodeGenerationAgent(query: str, df: pd.DataFrame):
     return code, should_plot, ""
 
 
-# === ExecutionAgent ====================================================
+# === ExecutionAgent
 
 
 def ExecutionAgent(code: str, df: pd.DataFrame, should_plot: bool):
@@ -138,7 +135,7 @@ def ExecutionAgent(code: str, df: pd.DataFrame, should_plot: bool):
         return f"Error executing code: {exc}"
 
 
-# === ReasoningCurator TOOL =========================================
+# === ReasoningCurator TOOL 
 def ReasoningCurator(query: str, result: Any) -> str:
     """Builds and returns the LLM prompt for reasoning about the result."""
     is_error = isinstance(result, str) and result.startswith("Error executing code")
@@ -170,7 +167,7 @@ def ReasoningCurator(query: str, result: Any) -> str:
     return prompt
 
 
-# === ReasoningAgent (streaming) =========================================
+# === ReasoningAgent (streaming) 
 def ReasoningAgent(query: str, result: Any):
     """Streams the LLM's reasoning about the result (plot or value) and extracts model 'thinking' and final explanation."""
     prompt = ReasoningCurator(query, result)
@@ -215,7 +212,7 @@ def ReasoningAgent(query: str, result: Any):
             ):
                 thinking_content += token
                 thinking_placeholder.markdown(
-                    f'<details class="thinking" open><summary>🤔 Model Thinking</summary><pre>{thinking_content}</pre></details>',
+                    f'<details class="thinking" open><summary> Model Thinking</summary><pre>{thinking_content}</pre></details>',
                     unsafe_allow_html=True,
                 )
 
@@ -224,7 +221,7 @@ def ReasoningAgent(query: str, result: Any):
     return thinking_content, cleaned
 
 
-# === DataFrameSummary TOOL (pandas only) =========================================
+# === DataFrameSummary TOOL (pandas only)
 def DataFrameSummaryTool(df: pd.DataFrame) -> str:
     """Generate a summary prompt string for the LLM based on the DataFrame."""
     prompt = f"""
@@ -240,7 +237,7 @@ def DataFrameSummaryTool(df: pd.DataFrame) -> str:
     return prompt
 
 
-# === DataInsightAgent (upload-time only) ===============================
+# === DataInsightAgent (upload-time only)
 
 
 def DataInsightAgent(df: pd.DataFrame) -> str:
@@ -264,7 +261,7 @@ def DataInsightAgent(df: pd.DataFrame) -> str:
         return f"Error generating dataset insights: {exc}"
 
 
-# === Helpers ===========================================================
+# === Helpers 
 
 
 def extract_first_code_block(text: str) -> str:
@@ -279,7 +276,7 @@ def extract_first_code_block(text: str) -> str:
     return text[start:end].strip()
 
 
-# === Main Streamlit App ===============================================
+# === Main Streamlit App 
 
 
 def main():
